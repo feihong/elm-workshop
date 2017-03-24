@@ -52,7 +52,7 @@ initialModel =
     }
 
 
-elmHubHeader : Html msg
+elmHubHeader : Html Msg
 elmHubHeader =
     header []
         [ h1 [] [ text "ElmHub" ]
