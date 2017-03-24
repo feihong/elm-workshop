@@ -4,15 +4,26 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
-model =
-    { result =
-        { id = 1
-        , name = "TheSeamau5/elm-checkerboardgrid-tutorial"
-        , stars = 66
+type alias GitHubResult =
+    { result :
+        { id : Int
+        , name : String
+        , stars : Int
         }
     }
 
 
+model : GitHubResult
+model =
+    { result =
+        { id = 1
+        , name = "TheSeamau5/elm-checkerboardgrid-tutorial"
+        , stars = 23
+        }
+    }
+
+
+main : Html msg
 main =
     let
         elmHubHeader =
@@ -22,17 +33,13 @@ main =
                 ]
     in
         div [ class "content" ]
-            [ text "TODO put the contents of elmHubHeader here instead of this text!"
+            [ elmHubHeader
             , ul [ class "results" ]
                 [ li []
                     [ span [ class "star-count" ]
-                        [-- TODO display the number of stars here.
-                         --
-                         -- HINT: You'll need some parentheses to do this!
-                        ]
-                      -- TODO use the model to put a link here that points to
-                      -- https://github.com/TheSeamau5/elm-checkerboardgrid-tutorial
-                      -- by prepending the "https://github.com/" part.
+                        [ text <| toString model.result.stars ]
+                    , a [ href <| "https://github.com/" ++ model.result.name ]
+                        [ text "project link" ]
                     ]
                 ]
             ]
