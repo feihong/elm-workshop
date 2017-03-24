@@ -32,6 +32,9 @@ initialModel =
     }
 
 
+type Msg = DeleteById Int
+
+
 elmHubHeader =
     header []
         [ h1 [] [ text "ElmHub" ]
@@ -52,16 +55,16 @@ viewSearchResult result =
         , a [ href ("https://github.com/" ++ result.name), target "_blank" ]
             [ text result.name ]
         , button
-            -- TODO add an onClick handler that sends a DELETE_BY_ID msg
-            [ class "hide-result" ]
+            [ class "hide-result", onClick <| DeleteById result.id ]
             [ text "X" ]
         ]
 
 
 update msg model =
-    -- TODO if msg.operation == "DELETE_BY_ID",
-    -- then return a new model without the given ID present anymore.
-    model
+    case msg of 
+        DeleteById id -> 
+            let newResults = List.filter (\r -> r.id /= id) model.results
+            in { model | results = newResults }
 
 
 main =
