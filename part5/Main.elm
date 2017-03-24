@@ -95,8 +95,12 @@ update msg model =
         SetQuery query ->
             { model | query = query }
 
-        DeleteById id ->
-            { model | results = List.filter (\r -> r.id /= id) model.results }
+        DeleteById idToDelete ->
+            let
+                deletePredicate { id } =
+                    id /= idToDelete
+            in
+                { model | results = List.filter deletePredicate model.results }
 
 
 main : Program Never Model Msg

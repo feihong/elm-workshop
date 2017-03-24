@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
-type alias GitHubResult =
+type alias Model =
     { result :
         { id : Int
         , name : String
@@ -13,7 +13,7 @@ type alias GitHubResult =
     }
 
 
-model : GitHubResult
+model : Model
 model =
     { result =
         { id = 1
