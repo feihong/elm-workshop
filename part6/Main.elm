@@ -25,7 +25,7 @@ searchResultDecoder =
     -- Look in SampleResponse.elm to see the exact JSON we'll be decoding!
     decode SearchResult
         |> required "id" int
-        |> required "name" string
+        |> required "full_name" string
         |> required "stargazers_count" int
 
 
