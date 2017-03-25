@@ -116,11 +116,8 @@ update msg model =
                 newResults =
                     model.results
                         |> List.filter (\{ id } -> id /= idToHide)
-
-                newModel =
-                    { model | results = newResults }
             in
-                ( newModel, Cmd.none )
+                ( { model | results = newResults }, Cmd.none )
 
         SetTableState state ->
             ( { model | tableState = state }, Cmd.none )
@@ -148,7 +145,7 @@ starsColumn =
     Table.veryCustomColumn
         { name = "Stars"
         , viewData = viewStars
-        , sorter = Table.increasingOrDecreasingBy (negate << .stars)
+        , sorter = Table.increasingOrDecreasingBy (.stars >> negate)
         }
 
 
@@ -218,7 +215,7 @@ viewErrorMessage errorMessage =
 viewStars : SearchResult -> Table.HtmlDetails Msg
 viewStars result =
     Table.HtmlDetails []
-        [ span [ class "star-count" ] [ text (toString result.stars) ] ]
+        [ span [ class "star-count" ] [ text <| toString result.stars ] ]
 
 
 viewSearchResult : SearchResult -> Table.HtmlDetails Msg
@@ -226,7 +223,7 @@ viewSearchResult result =
     Table.HtmlDetails []
         [ a [ href ("https://github.com/" ++ result.name), target "_blank" ]
             [ text result.name ]
-        , button [ class "hide-result", onClick (DeleteById result.id) ]
+        , button [ class "hide-result", onClick <| DeleteById result.id ]
             [ text "X" ]
         ]
 
