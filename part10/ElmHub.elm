@@ -292,6 +292,7 @@ getQueryString model =
         ++ getQueryOptions model.options
 
 
+getQueryOptions : SearchOptions -> String
 getQueryOptions options =
     [ ( "language", "elm" )
     , ( "in", options.searchIn )
