@@ -288,13 +288,21 @@ getQueryString model =
         ++ Auth.token
         ++ "&q="
         ++ model.query
-        ++ "+in:"
-        ++ model.options.searchIn
-        ++ "+stars:>="
-        ++ (toString model.options.minStars)
-        ++ "+language:elm"
-        ++ (if String.isEmpty model.options.userFilter then
-                ""
-            else
-                "+user:" ++ model.options.userFilter
-           )
+        ++ "+"
+        ++ getQueryOptions model.options
+
+
+getQueryOptions options =
+    [ ( "language", "elm" )
+    , ( "in", options.searchIn )
+    , ( "stars"
+      , if options.minStars == 0 then
+            ""
+        else
+            ">=" ++ (toString options.minStars)
+      )
+    , ( "user", options.userFilter )
+    ]
+        |> List.filter (\( key, value ) -> not (String.isEmpty value))
+        |> List.map (\( key, value ) -> key ++ ":" ++ value)
+        |> String.join "+"
