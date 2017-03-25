@@ -24,11 +24,11 @@ searchResultDecoder =
 
 
 type alias Model =
-    -- TODO add tableState : Table.State to the Model
     { query : String
     , results : List SearchResult
     , errorMessage : Maybe String
     , options : SearchOptions
+    , tableState : Table.State
     }
 
 
@@ -49,7 +49,6 @@ type alias SearchResult =
 
 initialModel : Model
 initialModel =
-    -- TODO initialize the Model's tableState to (Table.initialSort "Stars")
     { query = "tutorial"
     , results = []
     , errorMessage = Nothing
@@ -59,6 +58,7 @@ initialModel =
         , searchIn = "name"
         , userFilter = ""
         }
+    , tableState = Table.initialSort "Stars"
     }
 
 
@@ -89,7 +89,7 @@ type Msg
     | DeleteById Int
     | HandleSearchResponse (List SearchResult)
     | HandleSearchError (Maybe String)
-      -- TODO add a new constructor: SetTableState Table.State
+    | SetTableState Table.State
     | DoNothing
 
 
@@ -122,8 +122,9 @@ update msg model =
             in
                 ( newModel, Cmd.none )
 
-        -- TODO add a new branch for SetTableState
-        -- which records the new tableState in the Model.
+        SetTableState state ->
+            ( { model | tableState = state }, Cmd.none )
+
         DoNothing ->
             ( model, Cmd.none )
 
@@ -137,9 +138,7 @@ tableConfig : Table.Config SearchResult Msg
 tableConfig =
     Table.config
         { toId = .id >> toString
-        , toMsg =
-            -- TODO have the table use SetTableState for its toMsg instead of:
-            (\tableState -> DoNothing)
+        , toMsg = SetTableState
         , columns = [ starsColumn, nameColumn ]
         }
 
@@ -186,10 +185,8 @@ updateOptions optionsMsg options =
 view : Model -> Html Msg
 view model =
     let
-        currentTableState : Table.State
         currentTableState =
-            -- TODO have this use the actual current table state
-            Table.initialSort "Stars"
+            model.tableState
     in
         div [ class "content" ]
             [ header []
@@ -204,8 +201,7 @@ view model =
                     ]
                 ]
             , viewErrorMessage model.errorMessage
-              -- TODO have this use model.results instead of []
-            , Table.view tableConfig currentTableState []
+            , Table.view tableConfig currentTableState model.results
             ]
 
 
@@ -306,28 +302,6 @@ port githubSearch : String -> Cmd msg
 port githubResponse : (Json.Decode.Value -> msg) -> Sub msg
 
 
-{-| NOTE: The following is not part of the exercise, but is food for thought if
-you have extra time.
-
-There are several opportunities to improve this getQueryString implementation.
-A nice refactor of this would not change the type annotation! It would still be:
-
-getQueryString : Model -> String
-
-Try identifying patterns and writing helper functions which are responsible for
-handling those patterns. Then have this function call them. Things to consider:
-
-* There's pattern of adding "+foo:bar" - could we write a helper function for this?
-* In one case, if the "bar" in "+foo:bar" is empty, we want to return "" instead
-  of "+foo:" - is this always true? Should our helper function always do that?
-* We also join query parameters together with "=" and "&" a lot. Can we give
-  that pattern a similar treatment? Should we also take "?" into account?
-
-If you have time, give this refactor a shot and see how it turns out!
-
-Writing something out the long way like this, and then refactoring to something
-nicer, is generally the preferred way to go about building things in Elm.
--}
 getQueryString : Model -> String
 getQueryString model =
     -- See https://developer.github.com/v3/search/#example for how to customize!
@@ -335,13 +309,22 @@ getQueryString model =
         ++ Auth.token
         ++ "&q="
         ++ model.query
-        ++ "+in:"
-        ++ model.options.searchIn
-        ++ "+stars:>="
-        ++ (toString model.options.minStars)
-        ++ "+language:elm"
-        ++ (if String.isEmpty model.options.userFilter then
-                ""
-            else
-                "+user:" ++ model.options.userFilter
-           )
+        ++ "+"
+        ++ getQueryOptions model.options
+
+
+getQueryOptions : SearchOptions -> String
+getQueryOptions options =
+    [ ( "language", "elm" )
+    , ( "in", options.searchIn )
+    , ( "stars"
+      , if options.minStars == 0 then
+            ""
+        else
+            ">=" ++ (toString options.minStars)
+      )
+    , ( "user", options.userFilter )
+    ]
+        |> List.filter (\( key, value ) -> not (String.isEmpty value))
+        |> List.map (\( key, value ) -> key ++ ":" ++ value)
+        |> String.join "+"
